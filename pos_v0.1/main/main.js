@@ -2,8 +2,8 @@
 
 function printReceipt(inputs) {
   var inputList = countItemNum(inputs);
-  var result = calculateTotalPrice(inputList);
-  var result = printResultList(result)
+  var outputList = calculateTotalPrice(inputList);
+  var result = printResultList(outputList);
   console.log(result);
 }
 
@@ -22,7 +22,6 @@ function countItemNum(inputList) {
       itemKey[item.barcode] = countList.length-1;
     }
   });
-  console.log(countList);
   return countList;
 }
 
@@ -31,7 +30,6 @@ function calculateTotalPrice(inputList) {
   inputList.forEach(function (item) {
     item.totalPrice = item.count * item.item.price;
     sumTotal += item.totalPrice;
-    item.item = JSON.stringify(item.item);
   });
   var resultList = {itemList:inputList, sumTotal:sumTotal};
   console.log(resultList);
@@ -45,7 +43,7 @@ function printResultList(resultList) {
   "总计：" + resultList.sumTotal.toFixed(2) + "(元)\n"+
   "**********************";
   resultList.itemList.forEach(function (value) {
-    var obj = JSON.parse(value.item);
+    var obj = value.item;
     strList += "名称："+obj.name+"，数量："+value.count+obj.unit+
       "，单价："+Number(obj.price).toFixed(2)+"(元)，小计："+
       Number(value.totalPrice).toFixed(2)+"(元)\n"
