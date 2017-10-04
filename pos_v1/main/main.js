@@ -57,17 +57,39 @@ function countItemNum(tags) {
   return itemObj;
 }
 
-function calculateItemPrice(tagsCount) {
-  let itemList = [];
-  let tagsList = {itemList: itemList, sumTotal: 0, saveTotal: 0};
-  let cartItemList = getCartItemList(tagsCount);
-  cartItemList.forEach((item) => {
-    let count = tagsCount[item.barcode];
-    let totalPrice = Number(item.price) * count;
-    let itemObj = Object.assign({}, {item: item}, {count: count, totalPrice: totalPrice});
-    itemList.push(itemObj);
+function BuyTwoGetOneFree(item, count) {
+
+}
+
+function generatePromotion(promotions, item, count) {
+  let typeList = promotions.filter(item => {
+    return item.barcodes.indexOf(item.barcode) > -1;
+  }).map(item => {
+    return item.type;
   });
-  calculateSumTotalAndSaveTotal(tagsList);
+  let result = 0;
+  switch (typeList) {
+    case 'BUY_TWO_GET_ONE_FREE':
+      result = BuyTwoGetOneFree(item, count);
+      break;
+    default:
+      break;
+  }
+  return result;
+}
+
+function calculateItemPrice(tagsCount) {
+  let tagsList = {itemList: [], sumTotal: 0, saveTotal: 0};
+  let cartItemList = getCartItemList(tagsCount);
+  tagsList.itemList = cartItemList.map((item) => {
+    let count = tagsCount[item.barcode];
+    let savePrice = generatePromotion(loadPromotions(), item, count);
+    let totalPrice = Number(item.price) * count - savePrice;
+    tagsList.sumTotal += totalPrice;
+    tagsList.saveTotal += savePrice;
+    return Object.assign({}, item,
+      {count: count, totalPrice: totalPrice, savePrice: savePrice});
+  });
   return tagsList;
 }
 
@@ -82,6 +104,7 @@ function promotionItemPrice(tagsList, tagsCount) {
 }
 
 function displayReceipt(promotionTagsList) {
+  console.log(promotionTagsList);
   const FIXNUMBER = 2;
   let result = `***<没钱赚商店>收据***\n`;
   promotionTagsList.itemList.forEach((value) => {
@@ -98,6 +121,6 @@ function displayReceipt(promotionTagsList) {
 function printReceipt(tags) {
   let tagsCount = countItemNum(tags);
   let tagsList = calculateItemPrice(tagsCount);
-  let promotionTagsList = promotionItemPrice(tagsList, tagsCount);
-  displayReceipt(promotionTagsList);
+  // let promotionTagsList = promotionItemPrice(tagsList, tagsCount);
+  displayReceipt(tagsList);
 }
